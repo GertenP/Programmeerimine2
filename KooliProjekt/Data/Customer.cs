@@ -10,7 +10,6 @@ namespace KooliProjekt.Data
         public string Name { get; set; }
 
         [Required]
-        [EmailAddress(ErrorMessage = "Invalid email address")]
         public string Email { get; set; }
     }
 }

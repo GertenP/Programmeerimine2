@@ -45,12 +45,14 @@ namespace KooliProjekt.Controllers
         // GET: Products/Create
         public IActionResult Create()
         {
+            // Laadi kategooriad andmebaasist ja saada need vaatesse
+            var categories = _context.Categories.ToList();  // Laadime kõik kategooriad
+            ViewBag.Categories = categories; // Saadame kategooriad ViewBag kaudu vaatesse
+
             return View();
         }
 
         // POST: Products/Create
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create([Bind("Id,Name,Description,Price,CategoryId,Discount")] Product product)
@@ -77,12 +79,14 @@ namespace KooliProjekt.Controllers
             {
                 return NotFound();
             }
+
+            // Laadi kategooriad ja lisa need vormi, et saaks valida olemasoleva kategooria
+            ViewBag.Categories = _context.Categories.ToList();
+
             return View(product);
         }
 
         // POST: Products/Edit/5
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int id, [Bind("Id,Name,Description,Price,CategoryId,Discount")] Product product)

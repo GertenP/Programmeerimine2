@@ -26,7 +26,14 @@
                     <a asp-controller="Orders" asp-action="">Orders</a>
                 </li>
                 <li> <!--Caterogies on hulga lahedam, kui Categories-->
-                    <a asp-controller="Categories" asp-action="">Caterogies</a> 
+                    @{
+                        if (DateTime.Today.Month == 4 && DateTime.Today.Day == 1)
+                        {
+                            <a asp-controller="Caterogies" asp-action="">Caterogies</a>
+                        } else {
+                            <a asp-controller="Categories" asp-action="">Categories</a>
+                        }
+                    }
                 </li>
                 <li>
                     <a asp-controller="Home" asp-action="Privacy">Privacy</a>

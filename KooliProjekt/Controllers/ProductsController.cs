@@ -21,6 +21,8 @@ namespace KooliProjekt.Controllers
         // GET: Products
         public async Task<IActionResult> Index()
         {
+            var categories = _context.Categories.ToList();  // Laadime kõik kategooriad
+            ViewBag.Categories = categories; // Saadame kategooriad ViewBag kaudu vaatesse
             return View(await _context.Products.ToListAsync());
         }
 
@@ -32,8 +34,7 @@ namespace KooliProjekt.Controllers
                 return NotFound();
             }
 
-            var product = await _context.Products
-                .FirstOrDefaultAsync(m => m.Id == id);
+            var product = await _context.Products.FirstOrDefaultAsync(m => m.Id == id);
             if (product == null)
             {
                 return NotFound();

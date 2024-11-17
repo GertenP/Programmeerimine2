@@ -38,6 +38,7 @@
                     @foreach (var category in ViewBag.Categories as List<KooliProjekt.Data.Category>)
                     {
                         <option value="@category.Id">@category.Name</option>
+                        Console.WriteLine(category.Name);
                     }
                 </select>
                 <span asp-validation-for="CategoryId" class="text-danger"></span>

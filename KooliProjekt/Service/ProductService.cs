@@ -12,7 +12,7 @@ namespace KooliProjekt.Services
         public ProductService(ApplicationDbContext context)
         {
             _context = context;
-        }
+        }//
 
         public async Task<List<Product>> GetAllProductsAsync()
         {

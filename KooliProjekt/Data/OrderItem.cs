@@ -22,3 +22,4 @@ namespace KooliProjekt.Data
         public int Quantity { get; set; } // Ostetud kogus
     }
 }
+

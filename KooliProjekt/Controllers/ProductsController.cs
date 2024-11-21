@@ -19,11 +19,19 @@ namespace KooliProjekt.Controllers
         }
 
         // GET: Products
-        public async Task<IActionResult> Index()
+        // GET: Products
+        public async Task<IActionResult> Index(int page = 1)
         {
-            var categories = _context.Categories.ToList(); 
-            ViewBag.Categories = categories; // Saadame kategooriad ViewBag kaudu vaatesse
-            return View(await _context.Products.ToListAsync());
+            const int pageSize = 5; // Lehe suurus
+
+            // Saame kategooriad ViewBag kaudu
+            var categories = _context.Categories.ToList();
+            ViewBag.Categories = categories;
+
+            // Laeme andmed lehelistina
+            var pagedProducts = await _context.Products.GetPagedAsync(page, pageSize);
+
+            return View(pagedProducts);
         }
 
         // GET: Products/Details/5

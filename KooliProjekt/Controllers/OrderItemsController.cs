@@ -19,9 +19,11 @@ namespace KooliProjekt.Controllers
         }
 
         // GET: OrderItems
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(int page = 1)
         {
-            return View(await _context.OrderItems.ToListAsync());
+            var pageSize = 5; // Lehe suurus
+            var pagedOrderItems = await _context.OrderItems.GetPagedAsync(page, pageSize);
+            return View(pagedOrderItems);
         }
 
         // GET: OrderItems/Details/5

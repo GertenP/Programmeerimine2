@@ -21,6 +21,7 @@ namespace KooliProjekt.Controllers
         // GET: Products
         public async Task<IActionResult> Index()
         {
+            ViewBag.Categories = _context.Categories.ToList();
             return View(await _context.Products.ToListAsync());
         }
 
@@ -39,12 +40,15 @@ namespace KooliProjekt.Controllers
                 return NotFound();
             }
 
+            ViewBag.Categories = _context.Categories.ToList();
             return View(product);
         }
 
         // GET: Products/Create
         public IActionResult Create()
         {
+            var categoris = new SelectList(_context.Categories, "Id", "Name");
+            ViewBag.Categories = categoris;
             return View();
         }
 
@@ -53,14 +57,16 @@ namespace KooliProjekt.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,Name,Description,Price,CategoryId,Discount")] Product product)
+        public IActionResult Create(Product product)
         {
             if (ModelState.IsValid)
             {
                 _context.Add(product);
-                await _context.SaveChangesAsync();
+                _context.SaveChanges();
                 return RedirectToAction(nameof(Index));
             }
+
+            ViewBag.Categories = new SelectList(_context.Categories, "Id", "Name"); // Vajalik uuesti laadimine vigade korral
             return View(product);
         }
 
@@ -77,6 +83,7 @@ namespace KooliProjekt.Controllers
             {
                 return NotFound();
             }
+            ViewBag.Categories = new SelectList(_context.Categories, "Id", "Name"); 
             return View(product);
         }
 
@@ -112,6 +119,7 @@ namespace KooliProjekt.Controllers
                 }
                 return RedirectToAction(nameof(Index));
             }
+            ViewBag.Categories = new SelectList(_context.Categories, "Id", "Name"); 
             return View(product);
         }
 

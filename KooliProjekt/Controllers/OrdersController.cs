@@ -21,6 +21,7 @@ namespace KooliProjekt.Controllers
         // GET: Orders
         public async Task<IActionResult> Index()
         {
+            ViewBag.Customers = _context.Customers.ToList();
             return View(await _context.Orders.ToListAsync());
         }
 
@@ -45,15 +46,29 @@ namespace KooliProjekt.Controllers
         // GET: Orders/Create
         public IActionResult Create()
         {
+            var customers = new SelectList(_context.Customers, "Id", "Name");
+            ViewBag.Customers = customers;
+
+            // Siin saab määrata, et staatus on alguses näiteks "Pending"
+            var orderStatuses = new List<SelectListItem>
+    {
+        new SelectListItem { Value = "Pending", Text = "Pending" },
+        new SelectListItem { Value = "Shipped", Text = "Shipped" },
+        new SelectListItem { Value = "Delivered", Text = "Delivered" },
+        new SelectListItem { Value = "Cancelled", Text = "Cancelled" }
+    };
+            ViewBag.OrderStatuses = orderStatuses;
+
             return View();
         }
 
         // POST: Orders/Create
         // To protect from overposting attacks, enable the specific properties you want to bind to.
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
+        // POST: Orders/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,CustomerId,Date")] Order order)
+        public async Task<IActionResult> Create([Bind("Id,CustomerId,Date,Staatus")] Order order)
         {
             if (ModelState.IsValid)
             {
@@ -61,6 +76,19 @@ namespace KooliProjekt.Controllers
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
             }
+
+            ViewBag.Customers = new SelectList(_context.Customers, "Id", "Name", order.CustomerId);
+
+            // Kui vormi sisestamisel on vigasid, laadige staatused uuesti
+            var orderStatuses = new List<SelectListItem>
+    {
+        new SelectListItem { Value = "Pending", Text = "Pending" },
+        new SelectListItem { Value = "Shipped", Text = "Shipped" },
+        new SelectListItem { Value = "Delivered", Text = "Delivered" },
+        new SelectListItem { Value = "Cancelled", Text = "Cancelled" }
+    };
+            ViewBag.OrderStatuses = orderStatuses;
+
             return View(order);
         }
 
@@ -77,15 +105,26 @@ namespace KooliProjekt.Controllers
             {
                 return NotFound();
             }
+
+            // Laadige kliendid ja staatuse valikud redigeerimiseks
+            ViewBag.Customers = new SelectList(_context.Customers, "Id", "Name", order.CustomerId);
+
+            var orderStatuses = new List<SelectListItem>
+    {
+        new SelectListItem { Value = "Pending", Text = "Pending" },
+        new SelectListItem { Value = "Shipped", Text = "Shipped" },
+        new SelectListItem { Value = "Delivered", Text = "Delivered" },
+        new SelectListItem { Value = "Cancelled", Text = "Cancelled" }
+    };
+            ViewBag.OrderStatuses = orderStatuses;
+
             return View(order);
         }
 
         // POST: Orders/Edit/5
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,CustomerId,Date")] Order order)
+        public async Task<IActionResult> Edit(int id, [Bind("Id,CustomerId,Date,Staatus")] Order order)
         {
             if (id != order.Id)
             {
@@ -112,8 +151,22 @@ namespace KooliProjekt.Controllers
                 }
                 return RedirectToAction(nameof(Index));
             }
+
+            // Laadige staatused ja kliendid uuesti, kui on vigasid
+            ViewBag.Customers = new SelectList(_context.Customers, "Id", "Name", order.CustomerId);
+
+            var orderStatuses = new List<SelectListItem>
+    {
+        new SelectListItem { Value = "Pending", Text = "Pending" },
+        new SelectListItem { Value = "Shipped", Text = "Shipped" },
+        new SelectListItem { Value = "Delivered", Text = "Delivered" },
+        new SelectListItem { Value = "Cancelled", Text = "Cancelled" }
+    };
+            ViewBag.OrderStatuses = orderStatuses;
+
             return View(order);
         }
+
 
         // GET: Orders/Delete/5
         public async Task<IActionResult> Delete(int? id)

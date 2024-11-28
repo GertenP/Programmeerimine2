@@ -21,6 +21,8 @@ namespace KooliProjekt.Controllers
         // GET: OrderItems
         public async Task<IActionResult> Index()
         {
+            var products = _context.Products.ToList();
+            ViewBag.Products = products; // Otse List<Product>, mitte SelectList
             return View(await _context.OrderItems.ToListAsync());
         }
 
@@ -43,24 +45,39 @@ namespace KooliProjekt.Controllers
         }
 
         // GET: OrderItems/Create
+        // GET: OrderItems/Create
         public IActionResult Create()
         {
+            // Saame kõik tooted ja anname need vormi jaoks
+            var products = _context.Products.ToList();
+            ViewBag.Products = new SelectList(products, "Id", "Name"); // Nime ja ID järgi
+            ViewBag.Orders = new SelectList(_context.Orders, "Id", "Id"); // Tellimuse ID järgi
+
             return View();
         }
 
         // POST: OrderItems/Create
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,OrderId,ProductId,Quantity,Price,Discount")] OrderItem orderItem)
+        public IActionResult Create(OrderItem orderItem)
         {
             if (ModelState.IsValid)
             {
+                // Otsime kõik tooted, et määrata hind ja soodustus
+                var products = _context.Products.ToList();
+
+                // Määrame toote hind ja soodustus
+                orderItem.SetProductDetails(products);
+
+                // Salvestame andmebaasi
                 _context.Add(orderItem);
-                await _context.SaveChangesAsync();
+                _context.SaveChanges();
                 return RedirectToAction(nameof(Index));
             }
+
+            // Kui on vigu, tagastame vaate
+            ViewBag.Orders = new SelectList(_context.Orders, "Id", "Id"); // Tellimuse ID järgi
+            ViewBag.Products = new SelectList(_context.Products, "Id", "Name");
             return View(orderItem);
         }
 
@@ -77,6 +94,8 @@ namespace KooliProjekt.Controllers
             {
                 return NotFound();
             }
+            ViewBag.Products = new SelectList(_context.Products, "Id", "Name");
+            ViewBag.OrderId = new SelectList(_context.Orders, "Id", "Id", orderItem.OrderId);
             return View(orderItem);
         }
 
@@ -112,6 +131,8 @@ namespace KooliProjekt.Controllers
                 }
                 return RedirectToAction(nameof(Index));
             }
+            ViewBag.Products = new SelectList(_context.Products, "Id", "Name");
+            ViewBag.OrderId = new SelectList(_context.Orders, "Id", "Id", orderItem.OrderId);
             return View(orderItem);
         }
 

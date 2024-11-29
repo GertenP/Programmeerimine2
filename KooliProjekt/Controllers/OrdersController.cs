@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using KooliProjekt.Data;
+using System.Drawing.Printing;
 
 namespace KooliProjekt.Controllers
 {
@@ -19,10 +20,11 @@ namespace KooliProjekt.Controllers
         }
 
         // GET: Orders
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(int page = 1)
         {
+            int pageSize = 5;
             ViewBag.Customers = _context.Customers.ToList();
-            return View(await _context.Orders.ToListAsync());
+            return View(await _context.Orders.GetPagedAsync(page, pageSize));
         }
 
         // GET: Orders/Details/5

@@ -7,24 +7,25 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using KooliProjekt.Data;
 using System.Drawing.Printing;
+using KooliProjekt.Services;
 
 namespace KooliProjekt.Controllers
 {
     public class OrdersController : Controller
     {
-        private readonly ApplicationDbContext _context;
+        private readonly IOrderService _orderService;
 
-        public OrdersController(ApplicationDbContext context)
+        public OrdersController(IOrderService orderService)
         {
-            _context = context;
+            _orderService = orderService;
         }
 
         // GET: Orders
         public async Task<IActionResult> Index(int page = 1)
         {
             int pageSize = 5;
-            ViewBag.Customers = _context.Customers.ToList();
-            return View(await _context.Orders.GetPagedAsync(page, pageSize));
+            ViewBag.Customers = (await _orderService.GetCustomersAsync()).ToList();
+            return View(await _orderService.List(page, pageSize));
         }
 
         // GET: Orders/Details/5
@@ -35,8 +36,7 @@ namespace KooliProjekt.Controllers
                 return NotFound();
             }
 
-            var order = await _context.Orders
-                .FirstOrDefaultAsync(m => m.Id == id);
+            var order = await _orderService.Get(id);
             if (order == null)
             {
                 return NotFound();
@@ -46,9 +46,9 @@ namespace KooliProjekt.Controllers
         }
 
         // GET: Orders/Create
-        public IActionResult Create()
+        public async Task<IActionResult> Create()
         {
-            var customers = new SelectList(_context.Customers, "Id", "Name");
+            var customers = new SelectList((await _orderService.GetCustomersAsync()), "Id", "Name");
             ViewBag.Customers = customers;
 
             // Siin saab määrata, et staatus on alguses näiteks "Pending"
@@ -74,12 +74,11 @@ namespace KooliProjekt.Controllers
         {
             if (ModelState.IsValid)
             {
-                _context.Add(order);
-                await _context.SaveChangesAsync();
+                await _orderService.Save(order);
                 return RedirectToAction(nameof(Index));
             }
 
-            ViewBag.Customers = new SelectList(_context.Customers, "Id", "Name", order.CustomerId);
+            ViewBag.Customers = new SelectList((await _orderService.GetCustomersAsync()), "Id", "Name", order.CustomerId);
 
             // Kui vormi sisestamisel on vigasid, laadige staatused uuesti
             var orderStatuses = new List<SelectListItem>
@@ -102,14 +101,14 @@ namespace KooliProjekt.Controllers
                 return NotFound();
             }
 
-            var order = await _context.Orders.FindAsync(id);
+            var order = await _orderService.Get(id);
             if (order == null)
             {
                 return NotFound();
             }
 
             // Laadige kliendid ja staatuse valikud redigeerimiseks
-            ViewBag.Customers = new SelectList(_context.Customers, "Id", "Name", order.CustomerId);
+            ViewBag.Customers = new SelectList((await _orderService.GetCustomersAsync()), "Id", "Name", order.CustomerId);
 
             var orderStatuses = new List<SelectListItem>
     {
@@ -137,12 +136,11 @@ namespace KooliProjekt.Controllers
             {
                 try
                 {
-                    _context.Update(order);
-                    await _context.SaveChangesAsync();
+                    await _orderService.Save(order);
                 }
                 catch (DbUpdateConcurrencyException)
                 {
-                    if (!OrderExists(order.Id))
+                    if (!(await _orderService.Includes(id)))
                     {
                         return NotFound();
                     }
@@ -155,7 +153,7 @@ namespace KooliProjekt.Controllers
             }
 
             // Laadige staatused ja kliendid uuesti, kui on vigasid
-            ViewBag.Customers = new SelectList(_context.Customers, "Id", "Name", order.CustomerId);
+            ViewBag.Customers = new SelectList((await _orderService.GetCustomersAsync()), "Id", "Name", order.CustomerId);
 
             var orderStatuses = new List<SelectListItem>
     {
@@ -178,8 +176,7 @@ namespace KooliProjekt.Controllers
                 return NotFound();
             }
 
-            var order = await _context.Orders
-                .FirstOrDefaultAsync(m => m.Id == id);
+            var order = await _orderService.Get(id);
             if (order == null)
             {
                 return NotFound();
@@ -193,19 +190,18 @@ namespace KooliProjekt.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            var order = await _context.Orders.FindAsync(id);
+            var order = _orderService.Get(id);
             if (order != null)
             {
-                _context.Orders.Remove(order);
+                await _orderService.Delete(id);
             }
 
-            await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
         }
 
-        private bool OrderExists(int id)
+        private async Task<bool> OrderExists(int id)
         {
-            return _context.Orders.Any(e => e.Id == id);
+            return await _orderService.Includes(id);
         }
     }
 }

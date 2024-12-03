@@ -7,23 +7,24 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using KooliProjekt.Data;
 using System.Drawing.Printing;
+using KooliProjekt.Services;
 
 namespace KooliProjekt.Controllers
 {
     public class CustomersController : Controller
     {
-        private readonly ApplicationDbContext _context;
+        private readonly ICustomerService _customerService;
 
-        public CustomersController(ApplicationDbContext context)
+        public CustomersController(ICustomerService customerService)
         {
-            _context = context;
+            _customerService = customerService;
         }
 
         // GET: Customers
         public async Task<IActionResult> Index(int page = 1)
         {
             int pageSize = 5;
-            return View(await _context.Customers.GetPagedAsync(page, pageSize));
+            return View(await _customerService.List(page, pageSize));
         }
 
         // GET: Customers/Details/5
@@ -34,8 +35,7 @@ namespace KooliProjekt.Controllers
                 return NotFound();
             }
 
-            var customer = await _context.Customers
-                .FirstOrDefaultAsync(m => m.Id == id);
+            var customer = await _customerService.Get(id);
             if (customer == null)
             {
                 return NotFound();
@@ -59,8 +59,7 @@ namespace KooliProjekt.Controllers
         {
             if (ModelState.IsValid)
             {
-                _context.Add(customer);
-                await _context.SaveChangesAsync();
+                await _customerService.Save(customer);
                 return RedirectToAction(nameof(Index));
             }
             return View(customer);
@@ -74,7 +73,7 @@ namespace KooliProjekt.Controllers
                 return NotFound();
             }
 
-            var customer = await _context.Customers.FindAsync(id);
+            var customer = await _customerService.Get(id);
             if (customer == null)
             {
                 return NotFound();
@@ -98,12 +97,11 @@ namespace KooliProjekt.Controllers
             {
                 try
                 {
-                    _context.Update(customer);
-                    await _context.SaveChangesAsync();
+                    await _customerService.Save(customer);
                 }
                 catch (DbUpdateConcurrencyException)
                 {
-                    if (!CustomerExists(customer.Id))
+                    if (!(await _customerService.Includes(id)))
                     {
                         return NotFound();
                     }
@@ -125,8 +123,7 @@ namespace KooliProjekt.Controllers
                 return NotFound();
             }
 
-            var customer = await _context.Customers
-                .FirstOrDefaultAsync(m => m.Id == id);
+            var customer = await _customerService.Get(id);
             if (customer == null)
             {
                 return NotFound();
@@ -140,19 +137,18 @@ namespace KooliProjekt.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            var customer = await _context.Customers.FindAsync(id);
+            var customer = await _customerService.Get(id);
             if (customer != null)
             {
-                _context.Customers.Remove(customer);
+                await _customerService.Delete(id);
             }
 
-            await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
         }
 
-        private bool CustomerExists(int id)
+        private async Task<bool> CustomerExists(int id)
         {
-            return _context.Customers.Any(e => e.Id == id);
+            return await _customerService.Includes(id);
         }
     }
 }

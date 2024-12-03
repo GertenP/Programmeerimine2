@@ -7,25 +7,26 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using KooliProjekt.Data;
 using System.Drawing.Printing;
+using KooliProjekt.Services;
 
 namespace KooliProjekt.Controllers
 {
     public class OrderItemsController : Controller
     {
-        private readonly ApplicationDbContext _context;
+        private readonly IOrderItemService _orderItemService;
 
-        public OrderItemsController(ApplicationDbContext context)
+        public OrderItemsController(IOrderItemService orderItemService)
         {
-            _context = context;
+            _orderItemService = orderItemService;
         }
 
         // GET: OrderItems
         public async Task<IActionResult> Index(int page = 1)
         {
             int pageSize = 5;
-            var products = _context.Products.ToList();
+            var products = (await _orderItemService.GetProductsAsync()).ToList();
             ViewBag.Products = products; // Otse List<Product>, mitte SelectList
-            return View(await _context.OrderItems.GetPagedAsync(page, pageSize));
+            return View(await _orderItemService.List(page, pageSize));
         }
 
         // GET: OrderItems/Details/5
@@ -36,8 +37,7 @@ namespace KooliProjekt.Controllers
                 return NotFound();
             }
 
-            var orderItem = await _context.OrderItems
-                .FirstOrDefaultAsync(m => m.Id == id);
+            var orderItem = await _orderItemService.Get(id);
             if (orderItem == null)
             {
                 return NotFound();
@@ -48,12 +48,12 @@ namespace KooliProjekt.Controllers
 
         // GET: OrderItems/Create
         // GET: OrderItems/Create
-        public IActionResult Create()
+        public async Task<IActionResult> Create()
         {
             // Saame kõik tooted ja anname need vormi jaoks
-            var products = _context.Products.ToList();
+            var products = (await _orderItemService.GetProductsAsync()).ToList();
             ViewBag.Products = new SelectList(products, "Id", "Name"); // Nime ja ID järgi
-            ViewBag.Orders = new SelectList(_context.Orders, "Id", "Id"); // Tellimuse ID järgi
+            ViewBag.Orders = new SelectList((await _orderItemService.GetOrdersAsync()), "Id", "Id"); // Tellimuse ID järgi
 
             return View();
         }
@@ -61,25 +61,24 @@ namespace KooliProjekt.Controllers
         // POST: OrderItems/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult Create(OrderItem orderItem)
+        public async Task<IActionResult> Create(OrderItem orderItem)
         {
             if (ModelState.IsValid)
             {
                 // Otsime kõik tooted, et määrata hind ja soodustus
-                var products = _context.Products.ToList();
+                var products = (await _orderItemService.GetProductsAsync()).ToList();
 
                 // Määrame toote hind ja soodustus
                 orderItem.SetProductDetails(products);
 
                 // Salvestame andmebaasi
-                _context.Add(orderItem);
-                _context.SaveChanges();
+                await _orderItemService.Save(orderItem);
                 return RedirectToAction(nameof(Index));
             }
 
             // Kui on vigu, tagastame vaate
-            ViewBag.Orders = new SelectList(_context.Orders, "Id", "Id"); // Tellimuse ID järgi
-            ViewBag.Products = new SelectList(_context.Products, "Id", "Name");
+            ViewBag.Orders = new SelectList((await _orderItemService.GetOrdersAsync()), "Id", "Id"); // Tellimuse ID järgi
+            ViewBag.Products = new SelectList((await _orderItemService.GetOrdersAsync()), "Id", "Name");
             return View(orderItem);
         }
 
@@ -91,13 +90,13 @@ namespace KooliProjekt.Controllers
                 return NotFound();
             }
 
-            var orderItem = await _context.OrderItems.FindAsync(id);
+            var orderItem = await _orderItemService.Get(id);
             if (orderItem == null)
             {
                 return NotFound();
             }
-            ViewBag.Products = new SelectList(_context.Products, "Id", "Name");
-            ViewBag.OrderId = new SelectList(_context.Orders, "Id", "Id", orderItem.OrderId);
+            ViewBag.Products = new SelectList((await _orderItemService.GetOrdersAsync()), "Id", "Name");
+            ViewBag.OrderId = new SelectList((await _orderItemService.GetOrdersAsync()), "Id", "Id", orderItem.OrderId);
             return View(orderItem);
         }
 
@@ -117,12 +116,11 @@ namespace KooliProjekt.Controllers
             {
                 try
                 {
-                    _context.Update(orderItem);
-                    await _context.SaveChangesAsync();
+                    await _orderItemService.Save(orderItem);
                 }
                 catch (DbUpdateConcurrencyException)
                 {
-                    if (!OrderItemExists(orderItem.Id))
+                    if (!(await _orderItemService.Includes(id)))
                     {
                         return NotFound();
                     }
@@ -133,8 +131,8 @@ namespace KooliProjekt.Controllers
                 }
                 return RedirectToAction(nameof(Index));
             }
-            ViewBag.Products = new SelectList(_context.Products, "Id", "Name");
-            ViewBag.OrderId = new SelectList(_context.Orders, "Id", "Id", orderItem.OrderId);
+            ViewBag.Products = new SelectList((await _orderItemService.GetOrdersAsync()), "Id", "Name");
+            ViewBag.OrderId = new SelectList((await _orderItemService.GetOrdersAsync()), "Id", "Id", orderItem.OrderId);
             return View(orderItem);
         }
 
@@ -146,8 +144,7 @@ namespace KooliProjekt.Controllers
                 return NotFound();
             }
 
-            var orderItem = await _context.OrderItems
-                .FirstOrDefaultAsync(m => m.Id == id);
+            var orderItem = await _orderItemService.Get(id);
             if (orderItem == null)
             {
                 return NotFound();
@@ -161,19 +158,18 @@ namespace KooliProjekt.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            var orderItem = await _context.OrderItems.FindAsync(id);
+            var orderItem = await _orderItemService.Get(id);
             if (orderItem != null)
             {
-                _context.OrderItems.Remove(orderItem);
+                await _orderItemService.Delete(id);
             }
 
-            await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
         }
 
-        private bool OrderItemExists(int id)
+        private async Task<bool> OrderItemExists(int id)
         {
-            return _context.OrderItems.Any(e => e.Id == id);
+            return await _orderItemService.Includes(id);
         }
     }
 }

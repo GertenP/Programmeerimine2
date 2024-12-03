@@ -12,23 +12,23 @@ namespace KooliProjekt.Services
             _context = context;
         }
 
-        public async Task<List<Category>> GetCategoriesAsync()
+        public async Task<DbSet<Category>> GetCategoriesAsync()
         {
-            return await _context.Categories.ToListAsync();
+            return _context.Categories;
 
         }
 
-        public async Task<List<Product>> GetProductsAsync()
+        public async Task<DbSet<Product>> GetProductsAsync()
         {
-            return await _context.Products.ToListAsync();
+            return _context.Products;
         }
 
         public async Task<PagedResult<Product>> List(int page, int pageSize)
         {
-            return await _context.Products.GetPagedAsync(page, 5);
+            return await _context.Products.GetPagedAsync(page, pageSize);
         }
 
-        public async Task<Product> Get(int id)
+        public async Task<Product> Get(int? id)
         {
             return await _context.Products.FirstOrDefaultAsync(x => x.Id == id);
         }
@@ -56,6 +56,11 @@ namespace KooliProjekt.Services
                 await _context.SaveChangesAsync();
             }
 
+        }
+
+        public async Task<bool> Includes(int Id)
+        {
+            return await _context.Products.AnyAsync(product => product.Id == Id);
         }
     }
 }

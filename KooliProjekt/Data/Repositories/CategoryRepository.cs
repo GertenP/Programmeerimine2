@@ -9,9 +9,5 @@ namespace KooliProjekt.Data.Repositories
         {
         }
 
-        public Task Delete(Category category)
-        {
-            throw new NotImplementedException();
-        }
     }
 }

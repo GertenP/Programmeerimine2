@@ -6,8 +6,8 @@ namespace KooliProjekt.Services
     public interface IProductService
     {
         Task<PagedResult<Product>> List(int page, int pageSize);
-        Task<DbSet<Category>> GetCategoriesAsync();
-        Task<DbSet<Product>> GetProductsAsync();
+        Task<IList<Category>> GetCategoriesAsync();
+        Task<IList<Product>> GetProductsAsync();
 
         Task<Product> Get(int? id);
         Task Save (Product product);

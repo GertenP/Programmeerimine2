@@ -23,8 +23,9 @@ namespace KooliProjekt.Controllers
         public async Task<IActionResult> Index(int page = 1)
         {
             int pageSize = 5;
-            ViewBag.Categories = (await _productService.GetCategoriesAsync()).ToList();
-            return View(await _productService.List(page, pageSize));
+            ViewBag.Categories = (await _productService.GetCategoriesAsync());
+            var data = await _productService.List(page, pageSize);
+            return View(data);
         }
 
         // GET: Products/Details/5

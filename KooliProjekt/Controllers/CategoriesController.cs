@@ -24,7 +24,8 @@ namespace KooliProjekt.Controllers
         public async Task<IActionResult> Index(int page = 1)
         {
             int pageSize = 5;
-            return View(await _categoryItem.List(page, pageSize));
+            var data = await _categoryItem.List(page, pageSize);
+            return View(data);
         }
 
         // GET: Categories/Details/5

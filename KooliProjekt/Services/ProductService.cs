@@ -12,15 +12,15 @@ namespace KooliProjekt.Services
             _context = context;
         }
 
-        public async Task<DbSet<Category>> GetCategoriesAsync()
+        public async Task<IList<Category>> GetCategoriesAsync()
         {
-            return _context.Categories;
+            return _context.Categories.ToList();
 
         }
 
-        public async Task<DbSet<Product>> GetProductsAsync()
+        public async Task<IList<Product>> GetProductsAsync()
         {
-            return _context.Products;
+            return _context.Products.ToList();
         }
 
         public async Task<PagedResult<Product>> List(int page, int pageSize)

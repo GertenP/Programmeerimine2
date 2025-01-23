@@ -47,5 +47,36 @@ namespace KooliProjekt.UnitTests.ControllerTests
             Assert.Equal(pagedResult, result.Model);
 
         }
+        [Fact]
+        public async Task Details_should_return_notfound_when_id_is_missing()
+        {
+            // Arrange
+            int? id = null;
+
+            //Act
+
+            var result = await _controller.Details(id) as NotFoundResult;
+
+            //Assert
+            Assert.NotNull(result);
+        }
+
+        [Fact]
+        public async Task Details_should_return_notfound_when_list_is_missing_with_id()
+        {
+            int? id = 1;
+            var list = (Category)null;
+
+            _categoryItemServiceMock.Setup(x => x.Get(id.Value)).ReturnsAsync(list);
+
+            // Act
+            var result = await _controller.Details(id) as NotFoundResult;
+
+            // Assert
+            Assert.NotNull(result);
+        }
+
+
+
     }
 }

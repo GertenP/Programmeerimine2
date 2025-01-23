@@ -27,9 +27,9 @@ namespace KooliProjekt.Services
             return await _context.Orders.FindAsync(id);
         }
 
-        public async Task<DbSet<Customer>> GetCustomersAsync()
+        public async Task<IList<Customer>> GetCustomersAsync()
         {
-            return _context.Customers;
+            return _context.Customers.ToList();
         }
 
         public async Task<bool> Includes(int id)

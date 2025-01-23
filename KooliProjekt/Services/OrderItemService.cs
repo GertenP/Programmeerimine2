@@ -21,14 +21,14 @@ namespace KooliProjekt.Services
             return null;
         }
 
-        public async Task<DbSet<Product>> GetProductsAsync()
+        public async Task<IList<Product>> GetProductsAsync()
         {
-            return _context.Products;
+            return _context.Products.ToList();
         }
 
-        public async Task<DbSet<Order>> GetOrdersAsync()
+        public async Task<IList<Order>> GetOrdersAsync()
         {
-            return _context.Orders;
+            return _context.Orders.ToList();
         }
         public async Task<bool> Includes(int Id)
         {

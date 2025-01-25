@@ -140,11 +140,6 @@ namespace KooliProjekt.UnitTests.ControllerTests
         {
             // Arrange
             int id = 1;
-            var categories = new List<Category>()
-            {
-                new Category() {Id = 2, Name ="Name"},
-                new Category() {Id = 3, Name ="Name2"},
-            };
             Category category = new Category()
             {
                 Id = id,
@@ -159,23 +154,119 @@ namespace KooliProjekt.UnitTests.ControllerTests
             var result = await _controller.Edit(id, category) as NotFoundResult;
             //Assert
             Assert.NotNull(result);
+        }
 
+        [Fact]
+        public async Task Edit_should_return_DbUpdateConcurrencyException_when_modalstate_isvalid_and_DbUpdateConcurrencyException()
+        {
+            //Arrange
+            Category category = new Category() { Id = 1, Name = "Katse" };
+            int id = 1;
+            var exepction = new DbUpdateConcurrencyException();
+
+            //Act
+            _categoryItemServiceMock.Setup(x => x.Save(category)).Throws(exepction);
+            _categoryItemServiceMock.Setup(x => x.Includes(id)).ReturnsAsync(true);
+            // Assert
+
+            await Assert.ThrowsAsync<DbUpdateConcurrencyException>(async () => await _controller.Edit(id, category));
+        }
+
+        [Fact]
+        public async Task Details_should_return_viewresult_when_category_and_id_not_null()
+        {
+            // Arrange
+            int id = 1;
+            Category category = new Category() { Id = id, Name = "Category" };
+
+            // Act
+            _categoryItemServiceMock.Setup(x => x.Get(id)).ReturnsAsync(category);
+
+            var result = await _controller.Details(id);
+            // Assert
+
+            Assert.NotNull(result);
+            Assert.IsType<ViewResult>(result);
+
+        }
+
+        [Fact]
+        public async Task Edit_should_return_NotFound_when_cateogry_is_null()
+        {
+            // Arrange
+            int id = 1;
+
+            // Act
+            _categoryItemServiceMock.Setup(x => x.Get(It.IsAny<int>())).ReturnsAsync((Category)null).Verifiable();
+            var result = await _controller.Edit(id);
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.IsType<NotFoundResult>(result);
+            _categoryItemServiceMock.VerifyAll();
 
 
         }
 
         [Fact]
-        public async Task Edit_should_return_NotFound_when_id_is_not_equa_category_id()
+        public async Task Edit_should_return_viewresult_when_category_and_id_is_not_null()
         {
-            //Arrange
-            var category = new Category() { Id = 1, Name = "Puuvili" };
-            int id = 2;
+            // Arrange
+            int id = 1;
+            var category = new Category() { Id = id, Name = "Kategooria1" };
+            // Act
+            _categoryItemServiceMock.Setup(x => x.Get(It.IsAny<int>())).ReturnsAsync(category).Verifiable();
 
-            //Act
-            var result = await _controller.Edit(id, category) as NotFoundResult;
-
-            //Assert
+            var result = await _controller.Edit(id);
+            // Assert
             Assert.NotNull(result);
+            Assert.IsType<ViewResult>(result);
+            _categoryItemServiceMock.VerifyAll();
+        }
+
+        [Fact]
+        public async Task Edit_should_return_notfound_when_id_is_not_equal_to_category_id()
+        {
+            // Arrange
+            int id = 1;
+            var category = new Category() { Id = 2, Name = "Test" };
+            // Act
+            var result = await _controller.Edit(id, category);
+            // Assert
+            Assert.NotNull(result);
+            Assert.IsType<NotFoundResult>(result);
+        }
+
+        [Fact]
+        public async Task Edit_should_return_redirecttoaction_when_modalstate_isvalid()
+        {
+            // Arrange
+            int id = 1;
+            var category = new Category() { Id = id, Name = "Test" };
+            // Act
+            _categoryItemServiceMock.Setup(x => x.Save(It.IsAny<Category>())).Returns(Task.CompletedTask).Verifiable();
+
+            var result = await _controller.Edit(id, category);
+            // Assert
+            Assert.NotNull(result);
+            Assert.IsType<RedirectToActionResult>(result);
+            _categoryItemServiceMock.VerifyAll();
+
+        }
+
+        [Fact]
+        public async Task Edit_should_return_viewresult_when_modalstate_is_not_valid()
+        {
+            // Arrange
+            int id = 1;
+            var category = new Category() { Id= id, Name = "Test" };
+            // Act
+            _controller.ModelState.AddModelError("key", "error");
+            var result = await _controller.Edit(id, category);
+            // Assert   
+            Assert.NotNull(result);
+            Assert.IsType<ViewResult>(result);
+            
         }
     }
 }

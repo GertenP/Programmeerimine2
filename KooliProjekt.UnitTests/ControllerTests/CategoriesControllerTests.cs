@@ -266,7 +266,95 @@ namespace KooliProjekt.UnitTests.ControllerTests
             // Assert   
             Assert.NotNull(result);
             Assert.IsType<ViewResult>(result);
-            
+
         }
+
+        [Fact]
+        public async Task Delete_should_return_notfound_when_id_is_null()
+        {
+            // Arrange
+            int? id = null;
+            // Act
+            var result = await _controller.Delete(id);
+            // Assert
+            Assert.NotNull(result);
+            Assert.IsType<NotFoundResult>(result);
+        }
+
+        [Fact]
+        public async Task Delete_should_return_notfound_when_category_is_null()
+        {
+            // Arrange
+            int id = 1;
+            // Act
+            _categoryItemServiceMock.Setup(x => x.Get(It.IsAny<int>())).ReturnsAsync((Category)null).Verifiable();
+            var result = await _controller.Delete(id);
+            // Assert
+            Assert.NotNull(result);
+            Assert.IsType<NotFoundResult>(result);
+            _categoryItemServiceMock.VerifyAll();
+
+        }
+
+        [Fact]
+        public async Task Delete_should_return_view_when_id_and_category_is_not_null()
+        {
+            // Arrange
+            int id = 1;
+            var category = new Category() { Id = id, Name = "Test" };
+
+            // Act
+            _categoryItemServiceMock.Setup(x => x.Get(It.IsAny<int>())).ReturnsAsync(category).Verifiable();
+            var result = await _controller.Delete(id);
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.IsType<ViewResult>(result);
+            _categoryItemServiceMock.VerifyAll();
+        }
+
+        [Fact]
+        public async Task DeleteConfirmed_should_return_RedirectToAction_when_category_is_null()
+        {
+            // Arrange
+            int id = 1;
+            // Act
+            _categoryItemServiceMock.Setup(x => x.Get(It.IsAny<int>())).ReturnsAsync((Category)null).Verifiable();
+            var result = await _controller.DeleteConfirmed(id);
+            // Assert
+            Assert.NotNull(result);
+            Assert.IsType<RedirectToActionResult>(result);
+            _categoryItemServiceMock.VerifyAll();
+        }
+
+        [Fact]
+        public async Task DeleteConfirmed_should_return_RedirectToAction_when_category_is_not_null()
+        {
+            // Arrange
+            int id = 1;
+            var category = new Category() { Id= id, Name = "Test" };
+            // Act
+            _categoryItemServiceMock.Setup(x => x.Get(It.IsAny<int>())).ReturnsAsync(category).Verifiable();
+            _categoryItemServiceMock.Setup(x => x.Delete(It.IsAny<int>())).Returns(Task.CompletedTask).Verifiable();
+            var result = await _controller.DeleteConfirmed(id);
+            // Assert
+            Assert.NotNull(result);
+            Assert.IsType<RedirectToActionResult>(result);
+            _categoryItemServiceMock.VerifyAll();
+        }
+
+        [Fact]
+        public async Task CategoryExists_should_return_completedTask()
+        {
+            // Arrange
+            int id = 1;
+            // Act
+            _categoryItemServiceMock.Setup(x => x.Includes(It.IsAny<int>())).ReturnsAsync(true).Verifiable();
+            var result = await _controller.CategoryExists(id);
+            // Assert
+            Assert.IsType<bool>(result);
+            _categoryItemServiceMock.VerifyAll();
+        }
+
     }
 }

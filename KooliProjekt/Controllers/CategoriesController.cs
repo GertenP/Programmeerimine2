@@ -147,7 +147,7 @@ namespace KooliProjekt.Controllers
             return RedirectToAction(nameof(Index));
         }
 
-        private async Task<bool> CategoryExists(int id)
+        public async Task<bool> CategoryExists(int id)
         {
             return await _categoryItem.Includes(id);
         }

@@ -146,7 +146,7 @@ namespace KooliProjekt.Controllers
             return RedirectToAction(nameof(Index));
         }
 
-        private async Task<bool> CustomerExists(int id)
+        public async Task<bool> CustomerExists(int id)
         {
             return await _customerService.Includes(id);
         }

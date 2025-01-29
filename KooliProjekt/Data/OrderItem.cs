@@ -9,15 +9,5 @@
         public decimal Price { get; set; }
         public int Discount { get; set; }
 
-        // Funktsioon, et määrata hind ja soodustus toote põhjal
-        public void SetProductDetails(IEnumerable<Product> products)
-        {
-            var product = products.FirstOrDefault(p => p.Id == ProductId);
-            if (product != null)
-            {
-                Price = product.Price * Quantity;        // Määrame hinna toote põhjal
-                Discount = product.Discount;  // Määrame soodustuse toote põhjal
-            }
-        }
     }
 }

@@ -24,7 +24,7 @@ namespace KooliProjekt.Controllers
         public async Task<IActionResult> Index(int page = 1)
         {
             int pageSize = 5;
-            var products = (await _orderItemService.GetProductsAsync()).ToList();
+            var products = (await _orderItemService.GetProductsAsync());
             ViewBag.Products = products; // Otse List<Product>, mitte SelectList
             return View(await _orderItemService.List(page, pageSize));
         }
@@ -51,7 +51,7 @@ namespace KooliProjekt.Controllers
         public async Task<IActionResult> Create()
         {
             // Saame kõik tooted ja anname need vormi jaoks
-            var products = (await _orderItemService.GetProductsAsync()).ToList();
+            var products = (await _orderItemService.GetProductsAsync());
             ViewBag.Products = new SelectList(products, "Id", "Name"); // Nime ja ID järgi
             ViewBag.Orders = new SelectList((await _orderItemService.GetOrdersAsync()), "Id", "Id"); // Tellimuse ID järgi
 
@@ -66,11 +66,6 @@ namespace KooliProjekt.Controllers
             if (ModelState.IsValid)
             {
                 // Otsime kõik tooted, et määrata hind ja soodustus
-                var products = (await _orderItemService.GetProductsAsync()).ToList();
-
-                // Määrame toote hind ja soodustus
-                orderItem.SetProductDetails(products);
-
                 // Salvestame andmebaasi
                 await _orderItemService.Save(orderItem);
                 return RedirectToAction(nameof(Index));
@@ -78,7 +73,7 @@ namespace KooliProjekt.Controllers
 
             // Kui on vigu, tagastame vaate
             ViewBag.Orders = new SelectList((await _orderItemService.GetOrdersAsync()), "Id", "Id"); // Tellimuse ID järgi
-            ViewBag.Products = new SelectList((await _orderItemService.GetOrdersAsync()), "Id", "Name");
+            ViewBag.Products = new SelectList((await _orderItemService.GetProductsAsync()), "Id", "Name");
             return View(orderItem);
         }
 
@@ -95,7 +90,7 @@ namespace KooliProjekt.Controllers
             {
                 return NotFound();
             }
-            ViewBag.Products = new SelectList((await _orderItemService.GetOrdersAsync()), "Id", "Name");
+            ViewBag.Products = new SelectList((await _orderItemService.GetProductsAsync()), "Id", "Name");
             ViewBag.OrderId = new SelectList((await _orderItemService.GetOrdersAsync()), "Id", "Id", orderItem.OrderId);
             return View(orderItem);
         }
@@ -131,7 +126,7 @@ namespace KooliProjekt.Controllers
                 }
                 return RedirectToAction(nameof(Index));
             }
-            ViewBag.Products = new SelectList((await _orderItemService.GetOrdersAsync()), "Id", "Name");
+            ViewBag.Products = new SelectList((await _orderItemService.GetProductsAsync()), "Id", "Name");
             ViewBag.OrderId = new SelectList((await _orderItemService.GetOrdersAsync()), "Id", "Id", orderItem.OrderId);
             return View(orderItem);
         }
@@ -167,7 +162,7 @@ namespace KooliProjekt.Controllers
             return RedirectToAction(nameof(Index));
         }
 
-        private async Task<bool> OrderItemExists(int id)
+        public async Task<bool> OrderItemExists(int id)
         {
             return await _orderItemService.Includes(id);
         }

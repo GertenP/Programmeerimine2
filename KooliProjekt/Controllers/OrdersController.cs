@@ -199,7 +199,7 @@ namespace KooliProjekt.Controllers
             return RedirectToAction(nameof(Index));
         }
 
-        private async Task<bool> OrderExists(int id)
+        public async Task<bool> OrderExists(int id)
         {
             return await _orderService.Includes(id);
         }

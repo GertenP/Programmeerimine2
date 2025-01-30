@@ -1,65 +1,48 @@
 ﻿using KooliProjekt.Data;
+using KooliProjekt.Data.Repositories;
 using Microsoft.EntityFrameworkCore;
 
 namespace KooliProjekt.Services
 {
     public class OrderItemService : IOrderItemService
     {
-        private readonly ApplicationDbContext _context;
-        public OrderItemService(ApplicationDbContext context)
+        private readonly IUnitOfWork _uof;
+        public OrderItemService(IUnitOfWork uof)
         {
-            _context = context;
+            _uof = uof;
         }
 
         public async Task<OrderItem> Get(int? Id)
         {
-            var orderitem = await _context.OrderItems.FindAsync(Id);
-            if (orderitem != null)
-            {
-                return orderitem;
-            }
-            return null;
+            return await _uof.OrderItemsRepository.Get(Id);
         }
 
         public async Task<DbSet<Product>> GetProductsAsync()
         {
-            return _context.Products;
+            return await _uof.OrderItemsRepository.GetAllProducts();
         }
 
         public async Task<DbSet<Order>> GetOrdersAsync()
         {
-            return _context.Orders;
+            return await _uof.OrderItemsRepository.GetAllOrders();
         }
         public async Task<bool> Includes(int Id)
         {
-            return await _context.OrderItems.AnyAsync(x => x.Id == Id);
+            return await _uof.OrderItemsRepository.Includes(Id);
         }
 
         public Task<PagedResult<OrderItem>> List(int page, int pageSize)
         {
-            return _context.OrderItems.GetPagedAsync(page, pageSize);
+            return _uof.OrderItemsRepository.List(page, pageSize);
         }
 
         public async Task Save(OrderItem item)
         {
-            if (item.Id == 0)
-            {
-                await _context.OrderItems.AddAsync(item);
-            }
-            else
-            {
-                _context.OrderItems.Update(item);
-            }
-            await _context.SaveChangesAsync();
+            await _uof.OrderItemsRepository.Save(item);
         }
         public async Task Delete(int Id)
         {
-            var orderitem = await _context.OrderItems.FindAsync(Id);
-            if (orderitem != null)
-            {
-                _context.OrderItems.Remove(orderitem);
-                await _context.SaveChangesAsync();
-            }
+            await _uof.OrderItemsRepository.Delete(Id);
 
         }
     }

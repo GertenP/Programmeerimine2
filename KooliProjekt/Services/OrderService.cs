@@ -1,58 +1,46 @@
 ﻿using KooliProjekt.Data;
+using KooliProjekt.Data.Repositories;
 using Microsoft.EntityFrameworkCore;
 
 namespace KooliProjekt.Services
 {
     public class OrderService : IOrderService
     {
-        private readonly ApplicationDbContext _context;
+        private readonly IUnitOfWork _uof;
 
-        public OrderService(ApplicationDbContext context)
+        public OrderService(IUnitOfWork uof)
         {
-            _context = context;
+            _uof = uof;
         }
 
         public async Task Delete(int id)
         {
-            var order = await _context.Orders.FindAsync(id);
-            if (order != null)
-            {
-                _context.Orders.Remove(order);
-                await _context.SaveChangesAsync();
-            }
+            await _uof.OrdersRepository.Delete(id);
         }
 
         public async Task<Order> Get(int? id)
         {
-            return await _context.Orders.FindAsync(id);
+            return await _uof.OrdersRepository.Get(id);
         }
 
         public async Task<DbSet<Customer>> GetCustomersAsync()
         {
-            return _context.Customers;
+            return await _uof.OrdersRepository.GetAllCustomers();
         }
 
         public async Task<bool> Includes(int id)
         {
-            return await _context.Orders.AnyAsync(o => o.Id == id);
+            return await _uof.OrdersRepository.Includes(id);
         }
 
         public Task<PagedResult<Order>> List(int page, int pageSize)
         {
-            return _context.Orders.GetPagedAsync(page, pageSize);
+            return _uof.OrdersRepository.List(page, pageSize);
         }
 
         public async Task Save(Order order)
         {
-            if (order.Id == 0)
-            {
-                _context.Orders.Add(order);
-            }
-            else
-            {
-                _context.Orders.Update(order);
-            }
-            await _context.SaveChangesAsync();
+            await _uof.OrdersRepository.Save(order);
         }
     
 

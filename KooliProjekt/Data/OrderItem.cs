@@ -1,6 +1,6 @@
 ﻿namespace KooliProjekt.Data
 {
-    public class OrderItem
+    public class OrderItem : Entity
     {
         public int Id { get; set; }
         public int OrderId { get; set; }

@@ -1,4 +1,5 @@
 using KooliProjekt.Data;
+using KooliProjekt.Data.Repositories;
 using KooliProjekt.Services;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -25,6 +26,15 @@ namespace KooliProjekt
             builder.Services.AddScoped<ICustomerService, CustomerService>();
             builder.Services.AddScoped<IOrderService, OrderService>();
             builder.Services.AddScoped<IOrderItemService, OrderItemService>();
+            builder.Services.AddScoped<IProductsRepository, ProductsRepository>();
+            builder.Services.AddScoped<ICategoryRepository, CategoryRepository>();
+            builder.Services.AddScoped<ICustomersRepository, CustomersRepository>();
+            builder.Services.AddScoped<IOrdersRepository, OrdersRepository>();
+            builder.Services.AddScoped<IOrderItemsRepository, OrderItemsRepository>();
+
+            builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
+
+
             var app = builder.Build();
 
             // Configure the HTTP request pipeline.

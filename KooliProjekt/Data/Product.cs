@@ -2,7 +2,7 @@
 
 namespace KooliProjekt.Data
 {
-    public class Product
+    public class Product : Entity
     {
         public int Id { get; set; }
         [Required(ErrorMessage = "Tootenimi on kohustuslik")]

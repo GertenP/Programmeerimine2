@@ -11,7 +11,7 @@ namespace KooliProjekt.Data.Repositories
             DbContext = context;
         }
 
-        public virtual async Task<T> Get(int id)
+        public virtual async Task<T> Get(int? id)
         {
             return await DbContext.Set<T>().FindAsync(id);
         }
@@ -37,7 +37,7 @@ namespace KooliProjekt.Data.Repositories
             await DbContext.SaveChangesAsync();
         }
 
-        public virtual async Task Delete(int id)
+        public virtual async Task Delete(int? id)
         {
             await DbContext.Set<T>()
                 .Where(item => item.Id == id)
@@ -48,6 +48,31 @@ namespace KooliProjekt.Data.Repositories
         {
             DbContext.Set<T>().Remove(t);
             await DbContext.SaveChangesAsync();
+        }
+
+        public virtual async Task<bool> Includes(int Id)
+        {
+            return await DbContext.Set<T>().AnyAsync(x => x.Id == Id);
+        }
+
+        public virtual async Task<DbSet<Product>> GetAllProducts()
+        {
+            return DbContext.Products;
+        }
+
+        public virtual async Task<DbSet<Order>> GetAllOrders()
+        {
+            return DbContext.Orders;
+        }
+
+        public virtual async Task<DbSet<Customer>> GetAllCustomers()
+        {
+            return DbContext.Customers;
+        }
+
+        public virtual async Task<DbSet<Category>> GetAllCategories()
+        {
+            return DbContext.Categories;
         }
     }
 }

@@ -1,6 +1,6 @@
 ﻿namespace KooliProjekt.Data
 {
-    public class Customer
+    public class Customer : Entity
     {
         public int Id { get; set; }
         public string Name { get; set; }

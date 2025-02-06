@@ -338,5 +338,93 @@ namespace KooliProjekt.UnitTests.ControllerTests
             var notFoundResult = Assert.IsType<NotFoundResult>(result);
         }
 
+        [Fact]
+        public async Task Edit_should_return_notfound_when_order_is_null()
+        {
+            // Arrange
+            int id = 1;
+            // Act
+            _orderServiceMock.Setup(x => x.Get(It.IsAny<int>())).ReturnsAsync((Order)null).Verifiable();
+            var result = await _controller.Edit(id);
+            // Assert
+            Assert.NotNull(result);
+            Assert.IsType<NotFoundResult>(result);
+            _orderServiceMock.VerifyAll();
+        }
+
+        [Fact]
+        public async Task Edit_should_return_viewresult()
+        {
+            // Arrange
+            int id = 1;
+            Order order = new Order { Id = id };
+            var customers_data = new List<Customer>()
+            {
+                new Customer { Id = 3 },
+                new Customer { Id = 4 }
+            };
+            // Act
+            _orderServiceMock.Setup(x => x.GetCustomersAsync()).ReturnsAsync(customers_data);
+            _orderServiceMock.Setup(x => x.Get(It.IsAny<int>())).ReturnsAsync(order).Verifiable();
+            var result = await _controller.Edit(id) as ViewResult;
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.IsType<ViewResult>(result);
+            Assert.Equal((new SelectList(customers_data, "Id", "Name").Select(x => x.Value).ToList()), (_controller.ViewBag.Customers as SelectList).Select(x => x.Value).ToList());
+            Assert.Equal(order, result.Model);
+            _orderServiceMock.VerifyAll();
+        }
+
+        [Fact]
+        public async Task Edit_should_return_DbUpdateConcurrencyException_as_throw()
+        {
+            // Arrange
+            int id = 1;
+            Order order = new Order { Id = id };
+            var exception = new DbUpdateConcurrencyException();
+            // Act
+            _orderServiceMock.Setup(x => x.Save(It.IsAny<Order>())).ThrowsAsync(exception).Verifiable();
+            _orderServiceMock.Setup(x => x.Includes(It.IsAny<int>())).ReturnsAsync(true).Verifiable();
+            // Assert
+            await Assert.ThrowsAsync<DbUpdateConcurrencyException>(() => _controller.Edit(id, order));
+            _orderServiceMock.VerifyAll();
+        }
+
+        [Fact]
+        public async Task Edit_should_return_viewresult_when_modalstate_is_not_valid()
+        {
+            // Arrange
+            int id = 1;
+            Order order = new Order { Id = id };
+            var customers_data = new List<Customer>()
+            {
+                new Customer { Id = 3 },
+                new Customer { Id = 4 }
+            };
+            // Act
+            _orderServiceMock.Setup(x => x.GetCustomersAsync()).ReturnsAsync(customers_data);
+            _controller.ModelState.AddModelError("Key", "Error");
+            var result = await _controller.Edit(id, order) as ViewResult;
+            // Assert
+            Assert.NotNull(result);
+            Assert.Equal(order, result.Model);
+            Assert.Equal((new SelectList(customers_data, "Id", "Name").Select(x => x.Value).ToList()), (_controller.ViewBag.Customers as SelectList).Select(x => x.Value).ToList());
+
+        }
+
+        [Fact]
+        public async Task OrderExists_shuld_return_bool()
+        {
+            // Arrange
+            int id = 1;
+            // Act
+            _orderServiceMock.Setup(x => x.Includes(It.IsAny<int>())).ReturnsAsync(true).Verifiable();
+            var result = await _controller.OrderExists(id);
+            // Assert
+            Assert.NotNull(result);
+            Assert.IsType<bool>(result);
+            _orderServiceMock.VerifyAll();
+        }
     }
 }

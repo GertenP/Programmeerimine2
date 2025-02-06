@@ -150,12 +150,12 @@ namespace KooliProjekt.Controllers
             return RedirectToAction(nameof(Index));
         }
 
-        private async Task<bool> ProductExists(int id)
+        public async Task<bool> ProductExists(int id)
         {
             return await _productService.Includes(id);
         }
 
-        private async Task PopulateCategoriesAsync()
+        public async Task PopulateCategoriesAsync()
         {
             ViewBag.Categories = new SelectList(await _productService.GetCategoriesAsync(), "Id", "Name");
         }

@@ -95,7 +95,7 @@ namespace KooliProjekt.UnitTests.ControllerTests
         public async Task Create_should_return_RedirectToAction_when_modalstate_is_not_valid()
         {
             // Arrange
-            OrderItem orderItem = new OrderItem() { };
+            OrderItem orderItem = new OrderItem() { Id = 1, OrderId = 1, ProductId = 1, Quantity = 1, Price = 0.1m, Discount= 1 };
             // Act
             _orderItemServiceMock.Setup(x => x.GetProductsAsync()).ReturnsAsync(It.IsAny<IList<Product>>()).Verifiable();
             _orderItemServiceMock.Setup(x => x.Save(It.IsAny<OrderItem>())).Returns(Task.CompletedTask).Verifiable();

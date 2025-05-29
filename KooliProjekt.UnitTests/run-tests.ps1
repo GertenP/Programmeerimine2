@@ -14,4 +14,17 @@ Get-ChildItem -Path ./BuildReports/UnitTests -Directory -Recurse | Remove-Item -
 
 reportgenerator "-reports:$TestReports" "-targetdir:.//BuildReports//Coverage" "-reporttype:Html" "-classfilters:-AspNetCoreGeneratedDocument.*"
 
-start "BuildReports\Coverage\index.htm"
+if ($IsMacOS) {
+    # On macOS, use the 'open' command
+    $reportPath = (Get-Item "BuildReports/Coverage/index.htm").FullName
+    $openCommand = "open '$reportPath'"
+    Invoke-Expression $openCommand
+} elseif ($IsLinux) {
+    # On Linux, try xdg-open
+    $reportPath = (Get-Item "BuildReports/Coverage/index.htm").FullName
+    $openCommand = "xdg-open '$reportPath'"
+    Invoke-Expression $openCommand
+} else {
+    # On Windows, use Start-Process
+    Start-Process "BuildReports/Coverage/index.htm"
+}

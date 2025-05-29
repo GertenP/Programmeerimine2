@@ -1,59 +1,46 @@
 using KooliProjekt.Data;
+using KooliProjekt.Data.Repositories;
 using Microsoft.EntityFrameworkCore;
 
 namespace KooliProjekt.Services
 {
     public class CategoryItemService : ICategoryItemService
     {
-        private readonly ApplicationDbContext _context;
+        private readonly IUnitOfWork _uof;
 
-        public CategoryItemService(ApplicationDbContext context)
+        public CategoryItemService(IUnitOfWork uof)
         {
-            _context = context;
+            _uof = uof;
         }
 
         public async Task Delete(int Id)
         {
-            var category = await _context.Categories.FindAsync(Id);
-            if (category != null)
-            {
-                _context.Categories.Remove(category);
-                await _context.SaveChangesAsync();
-            }
+            await _uof.CategoryRepository.Delete(Id);
         }
 
         public async Task<Category> Get(int Id)
         {
-            return await _context.Categories.FindAsync(Id);
+            return await _uof.CategoryRepository.Get(Id);
         }
 
         public async Task<Category> Get(int? Id)
         {
-            return await _context.Categories.FindAsync(Id);
+            return await _uof.CategoryRepository.Get(Id);
         }
 
-        public Task<bool> Includes(int Id)
+        public async Task<bool> Includes(int Id)
         {
-            return _context.Categories.AnyAsync(product => product.Id == Id);
+            return await _uof.CategoryRepository.Includes(Id);
         }
 
         public async Task<PagedResult<Category>> List(int page, int pageSize)
         {
-            return await _context.Categories.GetPagedAsync(page, pageSize);
+            return await _uof.CategoryRepository.List(page, pageSize);
         }
 
         public async Task Save(Category category)
         {
-            if (category.Id == 0)
-            {
-                _context.Categories.Add(category);
-            }
-            else
-            {
-                _context.Categories.Update(category);
-            }
-
-            await _context.SaveChangesAsync();
+            await _uof.CategoryRepository.Save(category);
         }
     }
 }

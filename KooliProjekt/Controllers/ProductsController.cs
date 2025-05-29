@@ -23,7 +23,7 @@ namespace KooliProjekt.Controllers
         public async Task<IActionResult> Index(int page = 1)
         {
             int pageSize = 5;
-            ViewBag.Categories = (await _productService.GetCategoriesAsync());
+            ViewBag.Categories = (await _productService.GetAllCategories());
             var data = await _productService.List(page, pageSize);
             return View(data);
         }
@@ -42,7 +42,7 @@ namespace KooliProjekt.Controllers
                 return NotFound();
             }
 
-            ViewBag.Categories = (await _productService.GetCategoriesAsync()).ToList();
+            ViewBag.Categories = (await _productService.GetAllCategories()).ToList();
             return View(product);
         }
 
@@ -157,7 +157,7 @@ namespace KooliProjekt.Controllers
 
         public async Task PopulateCategoriesAsync()
         {
-            ViewBag.Categories = new SelectList(await _productService.GetCategoriesAsync(), "Id", "Name");
+            ViewBag.Categories = new SelectList(await _productService.GetAllCategories(), "Id", "Name");
         }
     }
 }

@@ -1,66 +1,52 @@
 using KooliProjekt.Data;
+using KooliProjekt.Data.Repositories;
 using Microsoft.EntityFrameworkCore;
 
 namespace KooliProjekt.Services
 {
     public class ProductService : IProductService
     {
-        private readonly ApplicationDbContext _context;
+        private readonly IUnitOfWork _uof;
 
-        public ProductService(ApplicationDbContext context)
+        public ProductService(IUnitOfWork uof)
         {
-            _context = context;
+            _uof = uof;
         }
 
-        public async Task<IList<Category>> GetCategoriesAsync()
+        public async Task<DbSet<Category>> GetAllCategories()
         {
-            return _context.Categories.ToList();
+            return await _uof.ProductsRepository.GetAllCategories();
 
         }
 
-        public async Task<IList<Product>> GetProductsAsync()
+        public async Task<DbSet<Product>> GetAllProducts()
         {
-            return _context.Products.ToList();
+            return await _uof.ProductsRepository.GetAllProducts();
         }
 
         public async Task<PagedResult<Product>> List(int page, int pageSize)
         {
-            return await _context.Products.GetPagedAsync(page, pageSize);
+            return await _uof.ProductsRepository.List(page, pageSize);
         }
 
         public async Task<Product> Get(int? id)
         {
-            return await _context.Products.FirstOrDefaultAsync(x => x.Id == id);
+            return await _uof.ProductsRepository.Get(id);
         }
 
         public async Task Save(Product product)
         {
-            if (product.Id == 0)
-            {
-                _context.Add(product);
-            }
-            else
-            {
-                _context.Update(product);
-            }
-
-            await _context.SaveChangesAsync();
+           await _uof.ProductsRepository.Save(product);
         }
 
         public async Task Delete(int Id)
         {
-            var product = await _context.Products.FindAsync(Id);
-            if (product != null)
-            {
-                _context.Products.Remove(product);
-                await _context.SaveChangesAsync();
-            }
-
+            await _uof.ProductsRepository.Delete(Id);
         }
 
         public async Task<bool> Includes(int Id)
         {
-            return await _context.Products.AnyAsync(product => product.Id == Id);
+            return await _uof.ProductsRepository.Includes(Id);
         }
     }
 }

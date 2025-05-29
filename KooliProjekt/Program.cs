@@ -1,4 +1,5 @@
 using KooliProjekt.Data;
+using KooliProjekt.Services;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
@@ -20,6 +21,10 @@ namespace KooliProjekt
                 .AddEntityFrameworkStores<ApplicationDbContext>();
             builder.Services.AddControllersWithViews();
 
+            builder.Services.AddScoped<IProductService, ProductService>();
+            builder.Services.AddScoped<ICategoryItemService, CategoryItemService>();
+            builder.Services.AddScoped<ICustomerService, CustomerService>();
+            
             var app = builder.Build();
 
             // Configure the HTTP request pipeline.
@@ -45,8 +50,21 @@ namespace KooliProjekt
             app.MapControllerRoute(
                 name: "default",
                 pattern: "{controller=Home}/{action=Index}/{id?}");
-            app.MapRazorPages();
 
+
+#if DEBUG
+            using (var scope = app.Services.CreateScope())
+            {
+                var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+
+                context.Database.Migrate();
+
+                SeedData.GenerateCategories(context);
+                SeedData.GenerateProducts(context);
+                SeedData.GenerateCustomers(context);
+            }
+#endif
+            
             app.Run();
         }
     }

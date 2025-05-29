@@ -6,24 +6,26 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using KooliProjekt.Data;
+using KooliProjekt.Services;
 
 namespace KooliProjekt.Controllers
 {
     public class ProductsController : Controller
     {
-        private readonly ApplicationDbContext _context;
+        private readonly IProductService _productService;
 
-        public ProductsController(ApplicationDbContext context)
+        public ProductsController(IProductService productService)
         {
-            _context = context;
+            _productService = productService;
         }
 
         // GET: Products
         public async Task<IActionResult> Index(int page = 1)
         {
-            ViewBag.Categories = (await _context.Categories.ToListAsync())
-                .Select(c => new SelectListItem { Value = c.Id.ToString(), Text = c.Name });
-            return View(await _context.Products.GetPagedAsync(page, 5));
+            int pageSize = 5;
+            ViewBag.Categories = (await _productService.GetCategoriesAsync());
+            var data = await _productService.List(page, pageSize);
+            return View(data);
         }
 
         // GET: Products/Details/5
@@ -34,39 +36,35 @@ namespace KooliProjekt.Controllers
                 return NotFound();
             }
 
-            var product = await _context.Products
-                .FirstOrDefaultAsync(m => m.Id == id);
+            var product = await _productService.Get(id);
             if (product == null)
             {
                 return NotFound();
             }
 
+            ViewBag.Categories = (await _productService.GetCategoriesAsync()).ToList();
             return View(product);
         }
 
         // GET: Products/Create
         public async Task<IActionResult> Create()
         {
-            ViewBag.Categories = (await _context.Categories.ToListAsync())
-                .Select(c => new SelectListItem { Value = c.Id.ToString(), Text = c.Name });
+            await PopulateCategoriesAsync();
             return View();
         }
 
         // POST: Products/Create
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,Name,Description,Price,CategoryId,DiscountPercentage")] Product product)
+        public async Task<IActionResult> Create(Product product)
         {
             if (ModelState.IsValid)
             {
-                _context.Add(product);
-                await _context.SaveChangesAsync();
+                await _productService.Save(product); // Ensure Save is async
                 return RedirectToAction(nameof(Index));
             }
-            ViewBag.Categories = (await _context.Categories.ToListAsync())
-                .Select(c => new SelectListItem { Value = c.Id.ToString(), Text = c.Name });
+
+            await PopulateCategoriesAsync(); // Reload categories on validation failure
             return View(product);
         }
 
@@ -78,22 +76,20 @@ namespace KooliProjekt.Controllers
                 return NotFound();
             }
 
-            var product = await _context.Products.FindAsync(id);
+            var product = await _productService.Get(id);
             if (product == null)
             {
                 return NotFound();
             }
-            ViewBag.Categories = (await _context.Categories.ToListAsync())
-                .Select(c => new SelectListItem { Value = c.Id.ToString(), Text = c.Name });
+
+            await PopulateCategoriesAsync();
             return View(product);
         }
 
         // POST: Products/Edit/5
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,Name,Description,Price,CategoryId,DiscountPercentage")] Product product)
+        public async Task<IActionResult> Edit(int id, [Bind("Id,Name,Description,Price,CategoryId,Discount")] Product product)
         {
             if (id != product.Id)
             {
@@ -104,12 +100,11 @@ namespace KooliProjekt.Controllers
             {
                 try
                 {
-                    _context.Update(product);
-                    await _context.SaveChangesAsync();
+                    await _productService.Save(product); // Ensure Save is async
                 }
                 catch (DbUpdateConcurrencyException)
                 {
-                    if (!ProductExists(product.Id))
+                    if (!await _productService.Includes(id))
                     {
                         return NotFound();
                     }
@@ -120,6 +115,8 @@ namespace KooliProjekt.Controllers
                 }
                 return RedirectToAction(nameof(Index));
             }
+
+            await PopulateCategoriesAsync();
             return View(product);
         }
 
@@ -131,8 +128,7 @@ namespace KooliProjekt.Controllers
                 return NotFound();
             }
 
-            var product = await _context.Products
-                .FirstOrDefaultAsync(m => m.Id == id);
+            var product = await _productService.Get(id);
             if (product == null)
             {
                 return NotFound();
@@ -146,19 +142,22 @@ namespace KooliProjekt.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            var product = await _context.Products.FindAsync(id);
+            var product = await _productService.Get(id);
             if (product != null)
             {
-                _context.Products.Remove(product);
+                await _productService.Delete(id); // Ensure Delete is async
             }
-
-            await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
         }
 
-        private bool ProductExists(int id)
+        public async Task<bool> ProductExists(int id)
         {
-            return _context.Products.Any(e => e.Id == id);
+            return await _productService.Includes(id);
+        }
+
+        public async Task PopulateCategoriesAsync()
+        {
+            ViewBag.Categories = new SelectList(await _productService.GetCategoriesAsync(), "Id", "Name");
         }
     }
 }

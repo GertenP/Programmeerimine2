@@ -34,19 +34,19 @@
 @foreach (var item in Model.Results) {
         <tr>
             <td>
-                Name
+                @Html.DisplayFor(modelItem => item.Name)
             </td>
             <td>
-                Description
+                @Html.DisplayFor(modelItem => item.Description)
             </td>
             <td>
-                Price
+                @Html.DisplayFor(modelItem => item.Price)
             </td>
             <td>
-                Category
+                @Html.DisplayFor(modelItem => item.CategoryId)
             </td>
             <td>
-                Discount
+                @Html.DisplayFor(modelItem => item.DiscountPercentage)
             </td>
             <td>
                 <a asp-action="Edit" asp-route-id="@item.Id">Edit</a> |

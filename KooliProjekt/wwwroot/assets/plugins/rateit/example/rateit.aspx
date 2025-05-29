@@ -1,4 +1,6 @@
 <%@ Page Language="C#" %>
+<%@ Import Namespace="Azure" %>
+<%@ Import Namespace="Azure.Core" %>
 <%
     //Get value
     float value = float.Parse(Request.Form["value"]);

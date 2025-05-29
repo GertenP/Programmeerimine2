@@ -25,6 +25,7 @@ namespace KooliProjekt.Tests.Controllers
         }
 
         [Fact]
+        // rename
         public async Task Index_ReturnsViewWithModelAndCategories()
         {
             _mockService.Setup(x => x.List(1, 5, null)).ReturnsAsync(new PagedResult<Product>());

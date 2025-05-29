@@ -1,11 +1,12 @@
 using KooliProjekt.Data;
+using KooliProjekt.Search;
 using Microsoft.EntityFrameworkCore;
 
 namespace KooliProjekt.Services
 {
     public interface IProductService
     {
-        Task<PagedResult<Product>> List(int page, int pageSize);
+        Task<PagedResult<Product>> List(int page, int pageSize, ProductSearch search);
         Task<IList<Category>> GetCategoriesAsync();
         Task<IList<Product>> GetProductsAsync();
 

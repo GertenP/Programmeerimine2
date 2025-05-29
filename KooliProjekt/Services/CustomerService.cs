@@ -1,4 +1,5 @@
 using KooliProjekt.Data;
+using KooliProjekt.Search;
 using Microsoft.EntityFrameworkCore;
 
 namespace KooliProjekt.Services
@@ -31,9 +32,16 @@ namespace KooliProjekt.Services
             return await _context.Customers.AnyAsync(c => c.Id == Id);
         }
 
-        public Task<PagedResult<Customer>> List(int page, int pageSize)
+        public async Task<PagedResult<Customer>> List(int page, int pageSize, CustomerSearch search = null)
         {
-            return _context.Customers.GetPagedAsync(page, pageSize);
+            var query = _context.Customers.AsQueryable();
+            search = search ?? new CustomerSearch();
+            if (!string.IsNullOrWhiteSpace((search.Keyword)))
+            {
+                query = query.Where(product => product.Name.Contains(search.Keyword));
+            }
+
+            return await query.OrderBy(list => list.Name).GetPagedAsync(page, pageSize);
         }
 
         public async Task Save(Customer customer)

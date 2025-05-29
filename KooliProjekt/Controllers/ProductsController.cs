@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using KooliProjekt.Data;
+using KooliProjekt.Models;
 using KooliProjekt.Services;
 
 namespace KooliProjekt.Controllers
@@ -20,12 +21,12 @@ namespace KooliProjekt.Controllers
         }
 
         // GET: Products
-        public async Task<IActionResult> Index(int page = 1)
+        public async Task<IActionResult> Index(int page = 1, ProductsIndexModel model = null)
         {
-            int pageSize = 5;
+            model = model ?? new ProductsIndexModel();
+            model.Data = await _productService.List(page, 5, model.Search);
             ViewBag.Categories = (await _productService.GetCategoriesAsync());
-            var data = await _productService.List(page, pageSize);
-            return View(data);
+            return View(model);
         }
 
         // GET: Products/Details/5

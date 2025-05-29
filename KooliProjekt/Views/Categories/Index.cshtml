@@ -1,4 +1,4 @@
-@model PagedResult<KooliProjekt.Data.Category>
+@model CategoriesIndexModel
 
 @{
     ViewData["Title"] = "Index";
@@ -9,17 +9,27 @@
 <p>
     <a asp-action="Create">Create New</a>
 </p>
+<form method="get">
+    <div class="form-group">
+        <label class="control-label">Nimi</label>
+        <input asp-for="Search.Keyword" class="form-control" />
+    </div>
+    <div class="form-group">
+        <button class="btn btn-primary">Otsi</button>
+        <a asp-controller="Categories" asp-action="Index" class="btn btn-primary">Reset</a>
+    </div>
+</form>
 <table class="table">
     <thead>
         <tr>
             <th>
-                Name
+                @Html.DisplayNameFor(model => model.Data.Results[0].Name)
             </th>
             <th></th>
         </tr>
     </thead>
     <tbody>
-@foreach (var item in Model.Results) {
+@foreach (var item in Model.Data.Results) {
         <tr>
             <td>
                 @Html.DisplayFor(modelItem => item.Name)
@@ -34,4 +44,4 @@
     </tbody>
 </table>
 
-@(await Component.InvokeAsync<PagerViewComponent>(Model))
+@(await Component.InvokeAsync<PagerViewComponent>(Model.Data))

@@ -2,7 +2,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace KooliProjekt.Data;
 
-public class Customer
+public class Customer   
 {
     public int Id { get; set; }
     [Required]

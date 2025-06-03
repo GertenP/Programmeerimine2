@@ -6,7 +6,7 @@ namespace KooliProjekt.Services
 {
     public interface ICategoryItemService
     {
-        Task<PagedResult<Category>> List(int page, int pageSize, CategorySearch search);
+        Task<PagedResult<Category>> List(int page, int pageSize, CategorySearch search = null);
 
         Task<Category> Get(int? Id);
 

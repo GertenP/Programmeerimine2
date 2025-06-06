@@ -1,6 +1,7 @@
 ﻿using System;
 using KooliProjekt.Data;
 using Microsoft.AspNetCore.Mvc.Testing;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace KooliProjekt.IntegrationTests.Helpers
 {
@@ -11,14 +12,19 @@ namespace KooliProjekt.IntegrationTests.Helpers
         public TestBase()
         {
             Factory = new TestApplicationFactory<FakeStartup>();
+
+            using var scope = Factory.Services.CreateScope();
+            var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+            dbContext.Database.EnsureCreated();
         }
 
         public void Dispose()
         {
-            var dbContext = (ApplicationDbContext)Factory.Services.GetService(typeof(ApplicationDbContext));
+            using var scope = Factory.Services.CreateScope();
+            var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
             dbContext.Database.EnsureDeleted();
         }
 
-        // Add your other helper methods here
+        // Lisa vajadusel teisi abimeetodeid
     }
 }
